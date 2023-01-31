@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:knitting_tools_app/components/side_menu.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,14 +14,14 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Knitting tools',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
           brightness: Brightness.light,
           primaryColorDark: Colors.indigo,
           primaryColorLight: Colors.indigo,
           primarySwatch: Colors.indigo,
-          textTheme: GoogleFonts.quicksandTextTheme()
-      ),
-      home: const MyHomePage(title: 'Hello, knitter!'),
+          textTheme: GoogleFonts.quicksandTextTheme()),
+      home:  SideMenu()// const MyHomePage(title: 'Hello, knitter!'),
     );
   }
 }
@@ -46,39 +47,31 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title)
-      ),
+      appBar: AppBar(title: Text(widget.title)),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
-          children: ListTile.divideTiles(
-          context: context,
-          tiles: [
+          children: ListTile.divideTiles(context: context, tiles: [
             const DrawerHeader(
               decoration: BoxDecoration(
                 color: Colors.indigo,
               ),
               child: Text('Drawer Header'),
             ),
-            ListTile( style: ListTileStyle.drawer,
+            ListTile(
+              style: ListTileStyle.drawer,
               title: const Text('Increase evenly calculator'),
-              onTap: () {
-
-              },
+              onTap: () {},
             ),
             ListTile(
               title: const Text('Decrease evenly calculator'),
-              onTap: () {
-
-              },
+              onTap: () {},
             ),
-          ListTile(
-          title: const Text('Count rows/rounds'),
-        onTap: () {
-
-        },
-          )]).toList(),
+            ListTile(
+              title: const Text('Count rows/rounds'),
+              onTap: () {},
+            )
+          ]).toList(),
         ),
       ),
       body: Center(
@@ -98,7 +91,7 @@ class _MyHomePageState extends State<MyHomePage> {
       floatingActionButton: FloatingActionButton(
         onPressed: _incrementCounter,
         tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.category_sharp),
       ),
     );
   }
