@@ -65,9 +65,10 @@ flutter:
 
   
   assets:
-    - assets/rive/animated_icon_set.riv
-    - assets/rive/sidemenu_icon.riv
-    - assets/images/background.jpg
+      # Rive assets
+    - assets/rive/
+      # Image assets
+    - assets/images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

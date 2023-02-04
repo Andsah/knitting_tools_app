@@ -38,7 +38,7 @@ class _SideMenuState extends State<SideMenu> {
                   menu: menu,
                   onPress: () {
                     menu.input!.change(true);
-                    Future.delayed(const Duration(seconds: 1), () {
+                    Future.delayed(const Duration(milliseconds: 800), () {
                       menu.input!.change(false);
                     });
                     setState(() {

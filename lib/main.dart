@@ -3,17 +3,19 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:knitting_tools_app/components/side_menu.dart';
+import 'package:knitting_tools_app/screens/calc_screen.dart';
 import 'package:knitting_tools_app/utils/rive_utils.dart';
 import 'package:rive/rive.dart';
 
 import 'components/menu_button.dart';
+import 'models/rive_asset.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const KnittingApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class KnittingApp extends StatelessWidget {
+  const KnittingApp({super.key});
 
   // This widget is the root of your application.
   @override
@@ -27,21 +29,19 @@ class MyApp extends StatelessWidget {
           primaryColorLight: Colors.indigo,
           primarySwatch: Colors.indigo,
           textTheme: GoogleFonts.quicksandTextTheme()),
-      home: const MyHomePage(title: 'Hello, knitter!'),
+      home: const KnittingHomePage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
+class KnittingHomePage extends StatefulWidget {
+  const KnittingHomePage({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<KnittingHomePage> createState() => _KnittingHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage>
+class _KnittingHomePageState extends State<KnittingHomePage>
     with SingleTickerProviderStateMixin {
   late AnimationController slideAnimationController;
   late Animation<double> slideAnimation;
@@ -51,6 +51,13 @@ class _MyHomePageState extends State<MyHomePage>
   late SMIBool isSideMenuOpen;
   bool sideMenuOpen = false;
   String chosenMenu = "Home";
+
+  // Background image for funsies
+  int bgImage = Random().nextInt(5);
+
+  Map<String, Widget> screens = {
+    "Stitch calculators": const CalcScreen(),
+  };
 
   @override
   void initState() {
@@ -78,25 +85,32 @@ class _MyHomePageState extends State<MyHomePage>
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: GestureDetector(
+        onTap: () {
+          FocusScopeNode currentFocus = FocusScope.of(context);
+
+          if (!currentFocus.hasPrimaryFocus) {
+            currentFocus.unfocus();
+          }
+        },
         onPanUpdate: (details) {
           // Swiping in right direction.
-          if (details.delta.dx > 0) {
+          if (details.delta.dx > 10) {
             if (!sideMenuOpen) {
               changeSideMenuState();
             }
           }
 
           // Swiping in left direction.
-          if (details.delta.dx < 0) {
+          if (details.delta.dx < -10) {
             if (sideMenuOpen) {
               changeSideMenuState();
             }
           }
         },
         child: Container(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             image: DecorationImage(
-                image: AssetImage("assets/images/background.jpg"),
+                image: AssetImage("assets/images/${bgImage.toString()}.jpg"),
                 fit: BoxFit.cover),
           ),
           child: Stack(
@@ -124,16 +138,11 @@ class _MyHomePageState extends State<MyHomePage>
                       borderRadius: const BorderRadius.all(Radius.circular(24)),
                       child: Center(
                         child: Container(
+                          padding: EdgeInsets.zero,
                           height: double.maxFinite,
                           width: double.maxFinite,
                           color: Colors.white,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              Text(
-                                  "Home pagiana: $chosenMenu") // TODO Make widgets for the different knitting tools.
-                            ],
-                          ),
+                          child: screens[chosenMenu],
                         ),
                       ),
                     ),
@@ -172,6 +181,11 @@ class _MyHomePageState extends State<MyHomePage>
       slideAnimationController.forward();
     } else {
       slideAnimationController.reverse();
+    }
+    FocusScopeNode currentFocus = FocusScope.of(context);
+
+    if (!currentFocus.hasPrimaryFocus) {
+      currentFocus.unfocus();
     }
   }
 }
