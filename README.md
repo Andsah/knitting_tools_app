@@ -1,4 +1,4 @@
-# knitting_tools_app
+# Knits & bobs
 A flutter app for knitting calculating tools.
 
 # Future features:

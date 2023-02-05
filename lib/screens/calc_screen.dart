@@ -9,121 +9,204 @@ class CalcScreen extends StatefulWidget {
   State<CalcScreen> createState() => _CalcScreenState();
 }
 
-class _CalcScreenState extends State<CalcScreen> {
+class _CalcScreenState extends State<CalcScreen> with TickerProviderStateMixin {
   bool increaseSelected = true;
   late int currentSts;
-  late int incSts;
+  late int changeSts;
   Map<String, List<String>> answers = {"round": [], "row": []};
+  late AnimationController curStsController;
+  late AnimationController incStsController;
+  late Animation<double> curAnimation;
+  late Animation<double> incAnimation;
+
+  @override
+  void initState() {
+    curStsController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 200))
+      ..addListener(() {
+        setState(() {});
+      });
+
+    incStsController = AnimationController(
+        vsync: this, duration: const Duration(milliseconds: 200))
+      ..addListener(() {
+        setState(() {});
+      });
+
+    curAnimation = Tween<double>(begin: 0, end: 0.5).animate(
+        CurvedAnimation(parent: curStsController, curve: Curves.fastOutSlowIn));
+    super.initState();
+
+    incAnimation = Tween<double>(begin: 0, end: 0.5).animate(
+        CurvedAnimation(parent: incStsController, curve: Curves.fastOutSlowIn));
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    curStsController.dispose();
+    incStsController.dispose();
+    super.dispose();
+  }
 
   final _formKey = GlobalKey<FormState>();
 
-  Map<String, List<String>> calculateAnswer() {
+  Map<String, List<String>> calcFunc() {
     // Long function to sift and sort through all possible scenarios for the answer
 
     int x = currentSts;
-    int b_round = incSts;
+    int b = changeSts;
+    String stitch = "m1";
 
     Map<String, List<String>> a = {"round": [], "row": []};
 
     // round
-    int i_round = (x / b_round).truncate();
-    int q_round = x % b_round;
-    int m_round = b_round - q_round;
+    int i = (x / b).truncate();
+    if (!increaseSelected) {
+      stitch = "k2tog";
+      i = i - 2;
+    }
+    int q = x % b;
+    int m = b - q;
 
-    if (m_round.isEven) {
-      if (q_round > 0) {
-        a["round"]!.add("*k$i_round, m1* ×${(m_round ~/ 2)}");
-        a["round"]!.add("*k${i_round + 1}, m1* ×$q_round");
-        a["round"]!.add("*k$i_round, m1* ×${(m_round ~/ 2)}");
+    if (m.isEven) {
+      if (q > 0) {
+        a["round"]!.add("*k$i, $stitch* ×${(m ~/ 2)}");
+        a["round"]!.add("*k${i + 1}, $stitch* ×$q");
+        a["round"]!.add("*k$i, $stitch* ×${(m ~/ 2)}");
       } else {
-        a["round"]!.add("*k$i_round, m1* ×$m_round");
+        a["round"]!.add("*k$i, $stitch* ×$m");
       }
     } else {
-      if (q_round > 0) {
-        if (q_round.isEven) {
-          a["round"]!.add("*k${i_round + 1}, m1* ×${(q_round ~/ 2)}");
-          a["round"]!.add("*k$i_round, m1* ×$m_round");
-          a["round"]!.add("*k${i_round + 1}, m1* ×${(q_round ~/ 2)}");
+      if (q > 0) {
+        if (q.isEven) {
+          a["round"]!.add("*k${i + 1}, $stitch* ×${(q ~/ 2)}");
+          a["round"]!.add("*k$i, $stitch* ×$m");
+          a["round"]!.add("*k${i + 1}, $stitch* ×${(q ~/ 2)}");
         } else {
-          if (m_round - 1 > 0) {
-            a["round"]!.add("*k$i_round, m1* ×${((m_round - 1) ~/ 2)}");
+          if (m - 1 > 0) {
+            a["round"]!.add("*k$i, $stitch* ×${((m - 1) ~/ 2)}");
           }
-          a["round"]!.add("*k${i_round + 1}, m1* ×$q_round");
-          a["round"]!.add("*k$i_round, m1* ×${((m_round + 1) ~/ 2)}");
+          a["round"]!.add("*k${i + 1}, $stitch* ×$q");
+          a["round"]!.add("*k$i, $stitch* ×${((m + 1) ~/ 2)}");
         }
       } else {
-        a["round"]!.add("*k$i_round, m1* ×$m_round");
+        a["round"]!.add("*k$i, $stitch* ×$m");
       }
     }
 
     // row... yeah it's a lot
 
-    if (q_round < 1) {
-      if (i_round.isEven) {
-        a["row"]!.add("*k${(i_round ~/ 2)}*");
-        a["row"]!.add("*m1, k$i_round* ×${m_round - 1}");
-        a["row"]!.add("*m1, k${(i_round ~/ 2)}*");
-      } else {
-        if (i_round > 2) {
-          a["row"]!.add("*k${((i_round - 1) ~/ 2)}*");
-          a["row"]!.add("*m1, k$i_round* ×${m_round - 1}");
-          a["row"]!.add("*k${((i_round + 1) ~/ 2)}*");
-        } else {
-          a["row"]!.add("*m1, k$i_round* ×${m_round - 1}");
-          a["row"]!.add("*k$i_round*");
-        }
-      }
-    } else if (q_round == 1) {
-      if (i_round.isEven) {
-        a["row"]!.add("*k${(i_round ~/ 2 + 1)}*");
-        a["row"]!.add("*m1, k$i_round* ×$m_round");
-        a["row"]!.add("*m1, k${(i_round ~/ 2)}*");
-      } else {
-        a["row"]!.add("*k${((i_round + 1) ~/ 2)}*");
-        a["row"]!.add("*m1, k$i_round* ×$m_round");
-        a["row"]!.add("*m1, k${((i_round + 1) ~/ 2)}*");
+    if (!increaseSelected) {
+      if (x ~/ 2 - 2 <= b) {
+        a["row"]!.add(
+            "Decreasing by one or two stitches less than half the number of total stitches cannot be done evenly across a row.");
+        return a;
       }
     } else {
-      if (m_round.isEven && m_round > 0) {
-        if (i_round.isOdd) {
-          a["row"]!.add("k${((i_round + 1) ~/ 2)}");
-          a["row"]!.add("*m1, k$i_round* ×${(m_round ~/ 2)}");
-          a["row"]!.add("*m1, k${i_round + 1}* ×${q_round - 1}");
-          a["row"]!.add("*m1, k$i_round* ×${(m_round ~/ 2)}");
-          a["row"]!.add("m1, k${((i_round + 1) ~/ 2)}");
-        } else {
-          a["row"]!.add("k${(i_round ~/ 2 + 1)}");
-          a["row"]!.add("*m1, k$i_round* ×${(m_round ~/ 2)}");
-          a["row"]!.add("*m1, k${i_round + 1}* ×${q_round - 1}");
-          a["row"]!.add("*m1, k$i_round* ×${(m_round ~/ 2)}");
-          a["row"]!.add("m1, k${(i_round ~/ 2)}");
+      if (x == b) {
+        a["row"]!.add(
+            "Increasing by the same number of stitches you already have evenly on a row would require to put two m1:s next to eachother. Drop the number of stitches you want to increase by one and consider making one of the m1:s a centered double increase.");
+      }
+    }
+
+    if (q == 0) {
+      // not sure if the decrease calc works the best but idc about that one as much. Throw it on the backlog.
+      if (i.isEven) {
+        a["row"]!.add("k${(i ~/ 2)}");
+        a["row"]!.add("*$stitch, k$i* ×${m - 1}");
+        a["row"]!.add("$stitch, k${(i ~/ 2)}");
+      } else {
+        if (i > 2) {
+          a["row"]!.add("k${((i - 1) ~/ 2)}");
+          a["row"]!.add("*$stitch, k$i* ×${m - 1}");
+          a["row"]!.add("$stitch, k${((i + 1) ~/ 2)}");
         }
-      } else if (m_round == 1) {
-        if (i_round.isOdd) {
-          a["row"]!.add("k${((i_round + 1) ~/ 2)}");
-          a["row"]!.add("m1, k$i_round");
-          a["row"]!.add("*m1, k${i_round + 1}* ×${q_round - 1}");
-          a["row"]!.add("m1, k${((i_round + 1) ~/ 2)}");
+      }
+    } else if (q == 1) {
+      if (i.isEven) {
+        a["row"]!.add("k${(i ~/ 2 + 1)}");
+        a["row"]!.add("*$stitch, k$i* ×$m");
+        a["row"]!.add("$stitch, k${(i ~/ 2)}");
+      } else {
+        a["row"]!.add("k${((i + 1) ~/ 2)}");
+        a["row"]!.add("*$stitch, k$i* ×$m");
+        a["row"]!.add("$stitch, k${((i + 1) ~/ 2)}");
+      }
+    } else {
+      if (m.isEven && m > 0) {
+        if (i.isOdd) {
+          a["row"]!.add("k${((i + 1) ~/ 2)}");
+          a["row"]!.add("*$stitch, k$i* ×${(m ~/ 2)}");
+          a["row"]!.add("*$stitch, k${i + 1}* ×${q - 1}");
+          a["row"]!.add("*$stitch, k$i* ×${(m ~/ 2)}");
+          a["row"]!.add("$stitch, k${((i + 1) ~/ 2)}");
         } else {
-          a["row"]!.add("k${(i_round ~/ 2 + 1)}");
-          a["row"]!.add("*m1, k$i_round* $m_round");
-          a["row"]!.add(
-              "*m1, k${i_round + 1}* ×${q_round - 1}"); // for this and below, could put m_round in the middle if q_round is even, possible improvement
-          a["row"]!.add("m1, k${(i_round ~/ 2)}");
+          a["row"]!.add("k${(i ~/ 2 + 1)}");
+          a["row"]!.add("*$stitch, k$i* ×${(m ~/ 2)}");
+          a["row"]!.add("*$stitch, k${i + 1}* ×${q - 1}");
+          a["row"]!.add("*$stitch, k$i* ×${(m ~/ 2)}");
+          a["row"]!.add("$stitch, k${(i ~/ 2)}");
+        }
+      } else if (q.isEven) {
+        // q IS EVEN
+        if (m == 1) {
+          if (i.isOdd) {
+            a["row"]!.add("k${((i + 1) ~/ 2)}");
+            a["row"]!.add("*$stitch, k${i + 1}* ×$q");
+            a["row"]!.add("$stitch, k${((i - 1) ~/ 2)}");
+          } else {
+            a["row"]!.add("k${i ~/ 2}");
+            a["row"]!.add("*$stitch, k${i + 1}* ×$q");
+            a["row"]!.add("$stitch, k${i ~/ 2}");
+          }
+        } else {
+          // m >= 3
+          if (i.isOdd) {
+            a["row"]!.add("k${((i + 1) ~/ 2)}");
+            a["row"]!.add("*$stitch, k$i* ×${((m - 1) ~/ 2)}");
+            a["row"]!.add("*$stitch, k${i + 1}* ×${q - 1}");
+            a["row"]!.add("*$stitch, k$i* ×${((m + 1) ~/ 2)}");
+            a["row"]!.add("$stitch, k${((i + 1) ~/ 2)}");
+          } else {
+            a["row"]!.add("k${(i ~/ 2)}");
+            a["row"]!.add("*$stitch, k$i* ×${((m - 1) ~/ 2)}");
+            a["row"]!.add("*$stitch, k${i + 1}* ×$q");
+            a["row"]!.add("*$stitch, k$i* ×${((m - 1) ~/ 2)}");
+            a["row"]!.add("$stitch, k${(i ~/ 2)}");
+          }
         }
       } else {
-        if (i_round.isOdd) {
-          a["row"]!.add("k${((i_round + 1) ~/ 2)}");
-          a["row"]!.add("*m1, k$i_round* ×${((m_round - 1) ~/ 2)}");
-          a["row"]!.add("*m1, k${i_round + 1}* ×${q_round - 1}");
-          a["row"]!.add("*m1, k$i_round* ×${((m_round + 1) ~/ 2)}");
-          a["row"]!.add("*m1, k${((i_round + 1) ~/ 2)}*");
+        // q IS ODD >= 3
+        if (m == 1) {
+          if (i.isOdd) {
+            a["row"]!.add("k${((i + 1) ~/ 2)}");
+            a["row"]!.add("*$stitch, k${i + 1}* ×${(q - 1) ~/ 2}");
+            a["row"]!.add("$stitch, k$i");
+            a["row"]!.add("*$stitch, k${i + 1}* ×${(q - 1) ~/ 2}");
+            a["row"]!.add("$stitch, k${((i + 1) ~/ 2)}");
+          } else {
+            a["row"]!.add("k${(i ~/ 2 + 1)}");
+            a["row"]!.add("*$stitch, k${i + 1}* ×${(q - 1) ~/ 2}");
+            a["row"]!.add("*$stitch, k$i* ×$m");
+            a["row"]!.add("*$stitch, k${i + 1}* ×${(q - 1) ~/ 2}");
+            a["row"]!.add("$stitch, k${(i ~/ 2)}");
+          }
         } else {
-          a["row"]!.add("k${(i_round ~/ 2 + 1)}");
-          a["row"]!.add("*m1, k$i_round* ×${((m_round - 1) ~/ 2)}");
-          a["row"]!.add("*m1, k${i_round + 1}* ×${q_round - 1}");
-          a["row"]!.add("*m1, k$i_round* ×${((m_round + 1) ~/ 2)}");
-          a["row"]!.add("*m1, k${(i_round ~/ 2)}*");
+          // m >= 3
+          if (i.isOdd) {
+            a["row"]!.add("k${((i + 1) ~/ 2)}");
+            a["row"]!.add("*$stitch, k${i + 1}* ×${(q - 1) ~/ 2}");
+            a["row"]!.add("*$stitch, k$i* ×$m");
+            a["row"]!.add("*$stitch, k${i + 1}* ×${(q - 1) ~/ 2}");
+            a["row"]!.add("*$stitch, k${((i + 1) ~/ 2)}*");
+          } else {
+            a["row"]!.add("k${(i ~/ 2)}");
+            a["row"]!.add("*$stitch, k$i* ×${(m - 1) ~/ 2}");
+            a["row"]!.add("*$stitch, k${i + 1}* ×$q");
+            a["row"]!.add("*$stitch, k$i* ×${(m - 1) ~/ 2}");
+            a["row"]!.add("*$stitch, k${(i ~/ 2)}*");
+          }
         }
       }
     }
@@ -139,61 +222,163 @@ class _CalcScreenState extends State<CalcScreen> {
 
   void updateInc(int sts) {
     setState(() {
-      incSts = sts;
+      changeSts = sts;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromARGB(255, 202, 197, 250),
-      body: Container(
+      body: increaseSelected
+          ? returnPage(context, "In", calcFunc)
+          : returnPage(context, "De", calcFunc),
+    );
+  }
+
+  SingleChildScrollView returnPage(
+      BuildContext context, String prefix, Function calcFunc) {
+    return SingleChildScrollView(
+      child: Container(
+        padding: const EdgeInsets.all(5),
         child: Form(
           key: _formKey,
           child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              TextFormField(
-                // CURRENT STITCHES
-                decoration: const InputDecoration(
-                  icon: Icon(Icons.numbers),
-                  labelText: 'Current stitches',
-                ),
-                keyboardType: TextInputType.number,
-                onChanged: (String value) {
-                  updateCurrent(int.parse(value));
-                },
-                onFieldSubmitted: (value) =>
-                    {_formKey.currentState!.validate()},
-                validator: (value) {
-                  if (value == null || value.isEmpty || int.parse(value) < 1) {
-                    return 'Please fill in a valid number of stitches';
-                  }
-                  return null;
-                },
-              ),
-              TextFormField(
-                // INCREASE STITCHES
-                decoration: const InputDecoration(
-                  icon: Icon(Icons.numbers),
-                  labelText: 'Increase stitches',
-                ),
-                keyboardType: TextInputType.number,
-                onChanged: (String value) {
-                  updateInc(int.parse(value));
-                },
-                onFieldSubmitted: (value) =>
-                    {_formKey.currentState!.validate()},
-                validator: (value) {
-                  if (value == null ||
-                      value.isEmpty ||
-                      int.parse(value) > currentSts ||
-                      int.parse(value) < 1) {
-                    return 'Please fill in a valid number of stitches';
-                  }
-                  return null;
-                },
+              const SizedBox(height: 40),
+              ElevatedButton(
+                  style: ButtonStyle(
+                      backgroundColor: MaterialStateColor.resolveWith((states) {
+                        if (states.contains(MaterialState.pressed)) {
+                          return Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withOpacity(0.5);
+                        }
+                        return Theme.of(context).colorScheme.primary;
+                      }),
+                      shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20)))),
+                  onPressed: () {
+                    setState(() {
+                      increaseSelected = !increaseSelected;
+                    });
+                  },
+                  child: const Text("Switch calculator")),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Focus(
+                    onFocusChange: (hasFocus) {
+                      if (hasFocus) {
+                        curStsController.forward();
+                      } else {
+                        curStsController.reverse();
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SizedBox(
+                        width: 170,
+                        child: TextFormField(
+                          // CURRENT STITCHES
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Theme.of(context)
+                                .colorScheme
+                                .secondary
+                                .withOpacity(0.5 + curAnimation.value),
+                            border: const OutlineInputBorder(
+                                borderSide: BorderSide.none,
+                                borderRadius: BorderRadius.horizontal(
+                                    left: Radius.circular(30),
+                                    right: Radius.circular(30))),
+                            focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    strokeAlign: 0.1,
+                                    width: 3,
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                                borderRadius: const BorderRadius.horizontal(
+                                    left: Radius.circular(30),
+                                    right: Radius.circular(30))),
+                            hintText: '${prefix}crease stitches',
+                          ),
+                          keyboardType: TextInputType.number,
+                          onChanged: (String value) {
+                            updateCurrent(int.parse(value));
+                          },
+                          onFieldSubmitted: (value) =>
+                              {_formKey.currentState!.validate()},
+                          validator: (value) {
+                            if (value == null ||
+                                value.isEmpty ||
+                                int.parse(value) < 1) {
+                              return 'Please fill in a valid number of stitches';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                  Focus(
+                    onFocusChange: (hasFocus) {
+                      if (hasFocus) {
+                        incStsController.forward();
+                      } else {
+                        incStsController.reverse();
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SizedBox(
+                        width: 170,
+                        child: TextFormField(
+                          // Change STITCHES
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Theme.of(context)
+                                .colorScheme
+                                .secondary
+                                .withOpacity(0.5 + incAnimation.value),
+                            border: const OutlineInputBorder(
+                                borderSide: BorderSide.none,
+                                borderRadius: BorderRadius.horizontal(
+                                    left: Radius.circular(30),
+                                    right: Radius.circular(30))),
+                            focusedBorder: OutlineInputBorder(
+                                borderSide: BorderSide(
+                                    strokeAlign: 0.1,
+                                    width: 3,
+                                    color:
+                                        Theme.of(context).colorScheme.primary),
+                                borderRadius: const BorderRadius.horizontal(
+                                    left: Radius.circular(30),
+                                    right: Radius.circular(30))),
+                            hintText: '${prefix}crease stitches',
+                          ),
+                          keyboardType: TextInputType.number,
+                          onChanged: (String value) {
+                            updateInc(int.parse(value));
+                          },
+                          onFieldSubmitted: (value) =>
+                              {_formKey.currentState!.validate()},
+                          validator: (value) {
+                            if (value == null ||
+                                value.isEmpty ||
+                                int.parse(value) > currentSts ||
+                                int.parse(value) < 1 ||
+                                prefix == "De" &&
+                                    int.parse(value) > currentSts ~/ 2) {
+                              return 'Please fill in a valid number of stitches';
+                            }
+                            return null;
+                          },
+                        ),
+                      ),
+                    ),
+                  )
+                ],
               ),
               ElevatedButton(
                   style: ButtonStyle(
@@ -212,41 +397,59 @@ class _CalcScreenState extends State<CalcScreen> {
                     // Validate returns true if the form is valid, or false otherwise.
                     if (_formKey.currentState!.validate()) {
                       setState(() {
-                        answers = calculateAnswer();
+                        answers = calcFunc();
                       });
                     }
                   },
                   child: const Text("Calculate")),
-              const Text("Increase evenly (round):"),
-              Flexible(
-                child: answers["round"]!.isNotEmpty
-                    ? ListView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: answers["round"]!.length,
-                        itemBuilder: (context, index) {
-                          return ListTile(
-                              title: Text(
-                            answers["round"]![index],
-                            textAlign: TextAlign.center,
-                          ));
-                        })
-                    : SizedBox.fromSize(),
-              ),
-              const Text("Increase evenly (row):"),
-              Flexible(
-                child: answers["row"]!.isNotEmpty
-                    ? ListView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: answers["row"]!.length,
-                        itemBuilder: (context, index) {
-                          return ListTile(
-                              title: Text(
-                            answers["row"]![index],
-                            textAlign: TextAlign.center,
-                          ));
-                        })
-                    : SizedBox.fromSize(),
-              ),
+              Container(
+                  width: double.maxFinite,
+                  padding: const EdgeInsets.only(top: 10),
+                  margin: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .secondary
+                          .withOpacity(0.3),
+                      borderRadius:
+                          const BorderRadius.all(Radius.circular(30))),
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    Text("${prefix}crease evenly in the round:",
+                        style: Theme.of(context).textTheme.titleLarge),
+                    SizedBox(
+                      height: 250,
+                      child: answers["round"]!.isNotEmpty
+                          ? ListView.builder(
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: answers["round"]!.length,
+                              itemBuilder: (context, index) {
+                                return ListTile(
+                                    title: Text(
+                                  answers["round"]![index],
+                                  textAlign: TextAlign.center,
+                                ));
+                              })
+                          : SizedBox.fromSize(),
+                    ),
+                    Text("${prefix}crease evenly across a row:",
+                        style: Theme.of(context).textTheme.titleLarge),
+                    SizedBox(
+                      height: 250,
+                      child: answers["row"]!.isNotEmpty
+                          ? ListView.builder(
+                              physics: const NeverScrollableScrollPhysics(),
+                              itemCount: answers["row"]!.length,
+                              itemBuilder: (context, index) {
+                                return ListTile(
+                                    title: Text(
+                                  answers["row"]![index],
+                                  textAlign: TextAlign.center,
+                                ));
+                              })
+                          : SizedBox.fromSize(),
+                    ),
+                    SizedBox(height: 100)
+                  ])),
             ],
           ),
         ),

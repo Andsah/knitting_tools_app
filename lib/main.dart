@@ -8,7 +8,7 @@ import 'package:knitting_tools_app/utils/rive_utils.dart';
 import 'package:rive/rive.dart';
 
 import 'components/menu_button.dart';
-import 'models/rive_asset.dart';
+import 'models/color_schemes.dart';
 
 void main() {
   runApp(const KnittingApp());
@@ -24,11 +24,13 @@ class KnittingApp extends StatelessWidget {
       title: 'Knitting tools',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-          brightness: Brightness.light,
-          primaryColorDark: Colors.indigo,
-          primaryColorLight: Colors.indigo,
-          primarySwatch: Colors.indigo,
-          textTheme: GoogleFonts.quicksandTextTheme()),
+          colorScheme: lightMode,
+          buttonTheme: buttonLight,
+          textTheme: GoogleFonts.quicksandTextTheme(lightText)),
+      darkTheme: ThemeData(
+          colorScheme: darkMode,
+          buttonTheme: buttonDark,
+          textTheme: GoogleFonts.quicksandTextTheme(darkText)),
       home: const KnittingHomePage(),
     );
   }
@@ -43,7 +45,7 @@ class KnittingHomePage extends StatefulWidget {
 
 class _KnittingHomePageState extends State<KnittingHomePage>
     with SingleTickerProviderStateMixin {
-  late AnimationController slideAnimationController;
+  late AnimationController animController;
   late Animation<double> slideAnimation;
   late Animation<double> scaleAnimation;
 
@@ -61,22 +63,22 @@ class _KnittingHomePageState extends State<KnittingHomePage>
 
   @override
   void initState() {
-    slideAnimationController = AnimationController(
+    animController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 200))
       ..addListener(() {
         setState(() {});
       });
 
-    slideAnimation = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(
-        parent: slideAnimationController, curve: Curves.fastOutSlowIn));
-    scaleAnimation = Tween<double>(begin: 1, end: 0.8).animate(CurvedAnimation(
-        parent: slideAnimationController, curve: Curves.fastOutSlowIn));
+    slideAnimation = Tween<double>(begin: 0, end: 1).animate(
+        CurvedAnimation(parent: animController, curve: Curves.fastOutSlowIn));
+    scaleAnimation = Tween<double>(begin: 1, end: 0.8).animate(
+        CurvedAnimation(parent: animController, curve: Curves.fastOutSlowIn));
     super.initState();
   }
 
   @override
   void dispose() {
-    slideAnimationController.dispose();
+    animController.dispose();
     super.dispose();
   }
 
@@ -178,9 +180,9 @@ class _KnittingHomePageState extends State<KnittingHomePage>
       sideMenuOpen = !sideMenuOpen;
     });
     if (sideMenuOpen) {
-      slideAnimationController.forward();
+      animController.forward();
     } else {
-      slideAnimationController.reverse();
+      animController.reverse();
     }
     FocusScopeNode currentFocus = FocusScope.of(context);
 
