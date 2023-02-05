@@ -200,13 +200,13 @@ class _CalcScreenState extends State<CalcScreen> with TickerProviderStateMixin {
             a["row"]!.add("*$stitch, k${i + 1}* ×${(q - 1) ~/ 2}");
             a["row"]!.add("*$stitch, k$i* ×$m");
             a["row"]!.add("*$stitch, k${i + 1}* ×${(q - 1) ~/ 2}");
-            a["row"]!.add("*$stitch, k${((i + 1) ~/ 2)}*");
+            a["row"]!.add("$stitch, k${((i + 1) ~/ 2)}");
           } else {
             a["row"]!.add("k${(i ~/ 2)}");
             a["row"]!.add("*$stitch, k$i* ×${(m - 1) ~/ 2}");
             a["row"]!.add("*$stitch, k${i + 1}* ×$q");
             a["row"]!.add("*$stitch, k$i* ×${(m - 1) ~/ 2}");
-            a["row"]!.add("*$stitch, k${(i ~/ 2)}*");
+            a["row"]!.add("$stitch, k${(i ~/ 2)}");
           }
         }
       }
@@ -438,7 +438,7 @@ class _CalcScreenState extends State<CalcScreen> with TickerProviderStateMixin {
                       Text("${prefix}crease evenly across a row:",
                           style: Theme.of(context).textTheme.titleLarge),
                       SizedBox(
-                        height: 250,
+                        height: 300,
                         child: answers["row"]!.isNotEmpty
                             ? ListView.builder(
                                 physics: const NeverScrollableScrollPhysics(),
@@ -452,7 +452,7 @@ class _CalcScreenState extends State<CalcScreen> with TickerProviderStateMixin {
                                 })
                             : SizedBox.fromSize(),
                       ),
-                      const SizedBox(height: 100)
+                      const SizedBox(height: 50)
                     ])),
               ),
             ],
