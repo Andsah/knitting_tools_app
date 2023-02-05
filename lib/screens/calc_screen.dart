@@ -11,6 +11,7 @@ class CalcScreen extends StatefulWidget {
 
 class _CalcScreenState extends State<CalcScreen> with TickerProviderStateMixin {
   bool increaseSelected = true;
+  bool answerCalculated = false;
   late int currentSts;
   late int changeSts;
   Map<String, List<String>> answers = {"round": [], "row": []};
@@ -239,12 +240,12 @@ class _CalcScreenState extends State<CalcScreen> with TickerProviderStateMixin {
       BuildContext context, String prefix, Function calcFunc) {
     return SingleChildScrollView(
       child: Container(
-        padding: const EdgeInsets.all(5),
+        padding: const EdgeInsets.only(top: 4, left: 5, right: 5, bottom: 5),
         child: Form(
           key: _formKey,
           child: Column(
             children: <Widget>[
-              const SizedBox(height: 40),
+              const SizedBox(height: 30),
               ElevatedButton(
                   style: ButtonStyle(
                       backgroundColor: MaterialStateColor.resolveWith((states) {
@@ -301,7 +302,7 @@ class _CalcScreenState extends State<CalcScreen> with TickerProviderStateMixin {
                                 borderRadius: const BorderRadius.horizontal(
                                     left: Radius.circular(30),
                                     right: Radius.circular(30))),
-                            hintText: '${prefix}crease stitches',
+                            hintText: 'Current stitches',
                           ),
                           keyboardType: TextInputType.number,
                           onChanged: (String value) {
@@ -398,58 +399,62 @@ class _CalcScreenState extends State<CalcScreen> with TickerProviderStateMixin {
                     if (_formKey.currentState!.validate()) {
                       setState(() {
                         answers = calcFunc();
+                        answerCalculated = true;
                       });
                     }
                   },
                   child: const Text("Calculate")),
-              Container(
-                  width: double.maxFinite,
-                  padding: const EdgeInsets.only(top: 10),
-                  margin: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .secondary
-                          .withOpacity(0.3),
-                      borderRadius:
-                          const BorderRadius.all(Radius.circular(30))),
-                  child: Column(mainAxisSize: MainAxisSize.min, children: [
-                    Text("${prefix}crease evenly in the round:",
-                        style: Theme.of(context).textTheme.titleLarge),
-                    SizedBox(
-                      height: 250,
-                      child: answers["round"]!.isNotEmpty
-                          ? ListView.builder(
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: answers["round"]!.length,
-                              itemBuilder: (context, index) {
-                                return ListTile(
-                                    title: Text(
-                                  answers["round"]![index],
-                                  textAlign: TextAlign.center,
-                                ));
-                              })
-                          : SizedBox.fromSize(),
-                    ),
-                    Text("${prefix}crease evenly across a row:",
-                        style: Theme.of(context).textTheme.titleLarge),
-                    SizedBox(
-                      height: 250,
-                      child: answers["row"]!.isNotEmpty
-                          ? ListView.builder(
-                              physics: const NeverScrollableScrollPhysics(),
-                              itemCount: answers["row"]!.length,
-                              itemBuilder: (context, index) {
-                                return ListTile(
-                                    title: Text(
-                                  answers["row"]![index],
-                                  textAlign: TextAlign.center,
-                                ));
-                              })
-                          : SizedBox.fromSize(),
-                    ),
-                    SizedBox(height: 100)
-                  ])),
+              Visibility(
+                visible: answerCalculated,
+                child: Container(
+                    width: double.maxFinite,
+                    padding: const EdgeInsets.only(top: 10),
+                    margin: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .secondary
+                            .withOpacity(0.3),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(30))),
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      Text("${prefix}crease evenly in the round:",
+                          style: Theme.of(context).textTheme.titleLarge),
+                      SizedBox(
+                        height: 250,
+                        child: answers["round"]!.isNotEmpty
+                            ? ListView.builder(
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: answers["round"]!.length,
+                                itemBuilder: (context, index) {
+                                  return ListTile(
+                                      title: Text(
+                                    answers["round"]![index],
+                                    textAlign: TextAlign.center,
+                                  ));
+                                })
+                            : SizedBox.fromSize(),
+                      ),
+                      Text("${prefix}crease evenly across a row:",
+                          style: Theme.of(context).textTheme.titleLarge),
+                      SizedBox(
+                        height: 250,
+                        child: answers["row"]!.isNotEmpty
+                            ? ListView.builder(
+                                physics: const NeverScrollableScrollPhysics(),
+                                itemCount: answers["row"]!.length,
+                                itemBuilder: (context, index) {
+                                  return ListTile(
+                                      title: Text(
+                                    answers["row"]![index],
+                                    textAlign: TextAlign.center,
+                                  ));
+                                })
+                            : SizedBox.fromSize(),
+                      ),
+                      const SizedBox(height: 100)
+                    ])),
+              ),
             ],
           ),
         ),
